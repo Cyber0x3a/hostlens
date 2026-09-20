@@ -364,7 +364,7 @@ The GitHub Actions workflow lives at `.github/workflows/workflow.yml`
 Every push and pull request runs formatting, linting, typing, tests, and package
 builds
 
-Publishing uses PyPI trusted publishing when a GitHub release is published
+Publishing uses PyPI trusted publishing when a version tag such as `v0.1.0` is pushed
 
 The PyPI project needs a trusted publisher for
 
