@@ -40,7 +40,10 @@ def identify(
 
 @app.command()
 def scan(
-    subnet: str | None = None,
+    subnet: Annotated[
+        str | None,
+        typer.Argument(help="IPv4 subnet in CIDR notation"),
+    ] = None,
     fast: Annotated[bool, typer.Option("--fast", help="Favor discovery speed")] = False,
     deep: Annotated[bool, typer.Option("--deep", help="Use deeper service probes")] = False,
 ) -> None:
@@ -59,7 +62,12 @@ def scan(
 
 
 @app.command()
-def discover(subnet: str | None = None) -> None:
+def discover(
+    subnet: Annotated[
+        str | None,
+        typer.Argument(help="IPv4 subnet in CIDR notation"),
+    ] = None,
+) -> None:
     """Run a fast discovery scan"""
     devices = asyncio.run(HostLens().discover(subnet))
     for device in devices:
@@ -68,7 +76,10 @@ def discover(subnet: str | None = None) -> None:
 
 @app.command()
 def watch(
-    subnet: str | None = None,
+    subnet: Annotated[
+        str | None,
+        typer.Argument(help="IPv4 subnet in CIDR notation"),
+    ] = None,
     passive: Annotated[bool, typer.Option("--passive", help="Do not probe devices")] = True,
 ) -> None:
     """Watch for devices observed by the operating system"""

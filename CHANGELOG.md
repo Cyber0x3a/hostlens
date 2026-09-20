@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 - 2026-09-20
+
+- Fixed positional subnet arguments for the `scan`, `discover`, and `watch` CLI commands
+- Added the full documentation site and refreshed the README
+
 ## 0.1.0 - 2026-09-20
 
 - First public API for host identification and subnet scanning
