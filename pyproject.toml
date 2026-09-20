@@ -41,6 +41,9 @@ dev = [
   "pytest-cov>=5",
   "ruff>=0.6",
 ]
+docs = [
+  "mkdocs-material>=9.5,<10",
+]
 
 [project.scripts]
 hostlens = "hostlens.cli:app"

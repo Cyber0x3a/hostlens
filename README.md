@@ -2,57 +2,23 @@
 
 # HostLens
 
-### Find and understand devices on your local network from Python
+Find devices on a local network and turn what they expose into readable Python objects
 
-[![Test and publish](https://github.com/Cyber0x3a/hostlens/actions/workflows/workflow.yml/badge.svg)](https://github.com/Cyber0x3a/hostlens/actions/workflows/workflow.yml)
-[![PyPI](https://img.shields.io/pypi/v/hostlens?color=3775A9)](https://pypi.org/project/hostlens/)
-[![Python](https://img.shields.io/pypi/pyversions/hostlens?color=FFD43B)](https://pypi.org/project/hostlens/)
-[![License](https://img.shields.io/github/license/Cyber0x3a/hostlens)](LICENSE)
+[Documentation](https://cyber0x3a.github.io/hostlens/) &nbsp;·&nbsp;
+[PyPI](https://pypi.org/project/hostlens/) &nbsp;·&nbsp;
+[Examples](examples/) &nbsp;·&nbsp;
+[Contributing](CONTRIBUTING.md)
 
-Simple public API · Async first · Explainable results · No cloud calls by default
+[![Test and publish](https://github.com/Cyber0x3a/hostlens/actions/workflows/workflow.yml/badge.svg?branch=main)](https://github.com/Cyber0x3a/hostlens/actions/workflows/workflow.yml)
+[![PyPI version](https://img.shields.io/pypi/v/hostlens.svg?style=flat-square&logo=pypi&logoColor=white&cacheSeconds=300)](https://pypi.org/project/hostlens/)
+[![Python versions](https://img.shields.io/pypi/pyversions/hostlens.svg?style=flat-square&logo=python&logoColor=white&cacheSeconds=300)](https://pypi.org/project/hostlens/)
+[![License](https://img.shields.io/pypi/l/hostlens.svg?style=flat-square&cacheSeconds=300)](LICENSE)
 
 </div>
-
-HostLens discovers devices on a LAN, collects useful facts about them, and turns
-those facts into one clean device profile
-
-It uses ARP, the local neighbor table, reverse DNS, OUI data, mDNS, SSDP, UPnP,
-NetBIOS, and a small set of useful service checks
-
-The normal API stays small even though the scan can use several protocols behind
-the scenes
-
-## Install
 
 ```bash
 pip install hostlens
 ```
-
-HostLens supports Python 3.11 and newer on Windows, Linux, and macOS
-
-For local development
-
-```bash
-git clone https://github.com/Cyber0x3a/hostlens.git
-cd hostlens
-python -m venv .venv
-```
-
-Windows PowerShell
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
-```
-
-Linux and macOS
-
-```bash
-source .venv/bin/activate
-python -m pip install -e ".[dev]"
-```
-
-## Identify one device
 
 ```python
 from hostlens import identify
@@ -62,135 +28,124 @@ device = identify("192.168.1.42")
 print(device.best_name)
 print(device.manufacturer)
 print(device.device_type)
-print(device.model)
-print(device.os)
 print(device.confidence)
 ```
-
-Possible result
 
 ```text
 Samsung QN90C
 Samsung Electronics
 smart_tv
-QN90C
-Tizen
 0.94
 ```
 
+HostLens uses the local neighbor table, ARP, reverse DNS, OUI data, mDNS, SSDP, UPnP, NetBIOS, and a short list of useful TCP services
+
 Unknown values stay `None`
 
-HostLens does not fill gaps with strings like `Unknown` or `N/A`
+Cloud enrichment stays off unless the caller enables it
 
-## Async API
+## Why HostLens exists
 
-Async is the main implementation and the sync helpers are only thin wrappers
+Most LAN discovery code stops at an IP and MAC address or exposes protocol-specific dictionaries
+
+HostLens gives callers one `DeviceProfile` with the evidence that produced it
+
+| What you need | What HostLens gives you |
+| --- | --- |
+| Quick inventory | Neighbor table and ARP discovery with fast enrichment |
+| A useful name | Friendly name, hostname, model, or manufacturer fallback |
+| Explainable identity | Raw evidence, selected fields, sources, and confidence |
+| Async application support | Async client, bounded concurrency, and streaming events |
+| A script or shell command | Sync helpers and the `hostlens` CLI |
+| Local-only operation | No account, API key, or cloud request by default |
+
+## Scan a network
+
+Async is the main implementation
 
 ```python
+import asyncio
+
 from hostlens import HostLens
 
-intel = HostLens()
-device = await intel.identify("192.168.1.42")
+
+async def main() -> None:
+    intel = HostLens()
+    devices = await intel.scan_network(mode="normal")
+
+    for device in devices:
+        print(f"{device.ip:15} {device.best_name}")
+
+
+asyncio.run(main())
 ```
 
-Scan one host deeply
+HostLens detects the preferred local IPv4 subnet when one is not supplied
+
+Pass a CIDR range when you want an exact network
 
 ```python
-device = await intel.scan_host("192.168.1.42", mode="deep")
+devices = await intel.scan_network("192.168.1.0/24", mode="fast")
 ```
 
-Scan several hosts with bounded concurrency
-
-```python
-devices = await intel.scan_hosts(
-    [
-        "192.168.1.20",
-        "192.168.1.21",
-        "192.168.1.30",
-    ],
-    mode="normal",
-)
-```
-
-Scan a subnet
-
-```python
-devices = await intel.scan_network("192.168.1.0/24")
-```
-
-Let HostLens detect the local subnet
-
-```python
-devices = await intel.scan_network()
-```
-
-Pick an interface when the machine has more than one active connection
+Select an interface on machines with several active adapters
 
 ```python
 intel = HostLens(interface="Wi-Fi")
-devices = await intel.scan_network()
 ```
 
-## Scan modes
+## Scanning modes
 
-| Mode | Good for | What it does |
+| Mode | Use it for | Collectors |
 | --- | --- | --- |
-| `fast` | A quick inventory | Neighbor table, ARP, reverse DNS, and OUI |
-| `normal` | Everyday use | Fast scan plus mDNS, SSDP, UPnP, and local rules |
-| `deep` | More detail | Normal scan plus NetBIOS and selected TCP services |
-| `passive` | Quiet observation | Reads devices already visible in the OS neighbor table |
+| `fast` | Quick inventory | Neighbor table, ARP, reverse DNS, OUI |
+| `normal` | Everyday identification | Fast mode, mDNS, SSDP, UPnP, local rules |
+| `deep` | More evidence from one device or a small network | Normal mode, NetBIOS, selected TCP services |
+| `passive` | Watching devices already known to the OS | Neighbor table and OUI without HostLens probes |
 
 Normal mode is the default
 
-Deep mode checks a small curated set of useful ports rather than scanning every
-port on every device
+Deep mode checks ports 22, 80, 443, 445, 554, and 9100
 
-```python
-from hostlens import HostLens, ScanMode
+It does not perform an unrestricted port scan
 
-intel = HostLens(timeout=3, concurrency=64)
-devices = await intel.scan_network(mode=ScanMode.FAST)
-```
+[Read the scanning guide](https://cyber0x3a.github.io/hostlens/scanning/)
 
 ## Progressive results
 
-Applications do not need to wait for every collector to finish
-
-HostLens first reports the device and then sends enriched updates
+A network scan can report a target before its enrichment collectors finish
 
 ```python
 from hostlens.models import DeviceFound, DeviceUpdated, ScanCompleted
 
 async for event in intel.scan_stream("192.168.1.0/24", mode="normal"):
-    match event:
-        case DeviceFound(device=device):
-            print("found", device.ip)
-
-        case DeviceUpdated(device=device):
-            print("updated", device.best_name)
-
-        case ScanCompleted(summary=summary):
-            print(summary)
+    if isinstance(event, DeviceFound):
+        print("found", event.device.ip)
+    elif isinstance(event, DeviceUpdated):
+        print("updated", event.device.best_name)
+    elif isinstance(event, ScanCompleted):
+        print("done", event.summary.duration)
 ```
 
-Ask for a full scan result when summary data matters
+Ask for counts and duration without using the event stream
 
 ```python
 result = await intel.scan_network(mode="fast", return_result=True)
 
-print(result.summary.duration)
 print(result.summary.targets_checked)
 print(result.summary.devices_found)
+print(result.summary.duration)
 ```
 
-## Device profile
+## Device profiles
 
-Every scan returns the same public model
+Every scanning path returns the same Pydantic model
 
 ```python
 device.ip
 device.mac
 device.hostname
+device.friendly_name
 device.manufacturer
 device.device_type
 device.model
@@ -202,23 +157,21 @@ device.evidence
 device.best_name
 ```
 
-Pydantic serialization is available without another conversion layer
+Serialize it without another conversion layer
 
 ```python
 data = device.model_dump()
 json_data = device.model_dump_json(indent=2)
 ```
 
-## Evidence and confidence
-
-HostLens keeps the raw facts that produced a profile
+Inspect the facts behind a result
 
 ```python
 for item in device.evidence:
     print(item.source, item.field, item.value, item.confidence)
 ```
 
-You can also get a readable explanation
+Or print the built-in explanation
 
 ```python
 print(device.explain())
@@ -235,36 +188,15 @@ Evidence:
 - mDNS advertises _airplay._tcp.local
 ```
 
-Confidence values are heuristic scores for ranking evidence
+Confidence values are heuristics for choosing and ranking evidence
 
-They are not presented as mathematically calibrated probabilities
+They are not calibrated probabilities
 
-## Privacy and Fingerbank
+[Read about profiles and evidence](https://cyber0x3a.github.io/hostlens/device-profiles/)
 
-Local scanning works without an account or API key
+## Command line
 
-Cloud enrichment is disabled by default and HostLens never sends device data to
-Fingerbank unless the caller enables it
-
-```python
-intel = HostLens(
-    cloud=True,
-    fingerbank_api_key="your-api-key",
-)
-```
-
-Preview the payload before any cloud lookup
-
-```python
-payload = intel.preview_cloud_payload(device)
-print(payload)
-```
-
-API keys are not stored in evidence and are not written to logs
-
-## CLI
-
-The CLI calls the same Python API used by applications
+The CLI calls the same Python API
 
 ```bash
 hostlens identify 192.168.1.20
@@ -279,101 +211,102 @@ hostlens discover
 hostlens watch --passive
 ```
 
-## How the code is organized
+[Read the CLI guide](https://cyber0x3a.github.io/hostlens/cli/)
 
-```text
-src/hostlens/
-├── api.py              sync and async convenience functions
-├── client.py           public orchestration API
-├── config.py           scan mode defaults
-├── models/             public Pydantic models and scan events
-├── network/            addressing, neighbor table, and ARP discovery
-├── collectors/         one focused module for each protocol
-├── parsers/            deterministic protocol parsing
-├── identity/           fingerprints, Fingerbank, and evidence fusion
-└── cli/                commands and terminal output
+## Privacy and Fingerbank
+
+Local scanning works without an account or API key
+
+Fingerbank is opt in
+
+```python
+import os
+
+intel = HostLens(
+    cloud=True,
+    fingerbank_api_key=os.environ["FINGERBANK_API_KEY"],
+)
 ```
 
-The dependency flow stays simple
+Preview the values that would leave the machine
 
-```text
-network discovery
-      ↓
-evidence collectors
-      ↓
-local or cloud identity hints
-      ↓
-evidence fusion
-      ↓
-DeviceProfile
+```python
+payload = intel.preview_cloud_payload(device)
+print(payload)
 ```
 
-Collectors collect facts
+API keys are not added to evidence or logs
 
-Parsers parse protocol data
-
-Fingerprint rules interpret facts
-
-Fusion picks the final values
-
-The client only coordinates those steps
+[Read the cloud and privacy guide](https://cyber0x3a.github.io/hostlens/cloud/)
 
 ## Platform notes
 
-Active ARP discovery uses Scapy
+HostLens supports Python 3.11 and newer on Windows, Linux, and macOS
 
-Windows may need [Npcap](https://npcap.com/) and an elevated terminal for raw ARP
-access
+Active ARP discovery may need extra system access
 
-Linux may need root or the relevant raw socket capability
+<details>
+<summary><strong>Windows</strong></summary>
 
-When raw ARP is unavailable, HostLens can still use the local neighbor table and
-the collectors that work in the current environment
+Install [Npcap](https://npcap.com/) when Scapy cannot open the network adapter
+
+Some systems also need an elevated terminal
+
+</details>
+
+<details>
+<summary><strong>Linux</strong></summary>
+
+The process needs raw socket access for active ARP discovery
+
+The neighbor table can still work without it
+
+</details>
+
+<details>
+<summary><strong>macOS</strong></summary>
+
+Raw packet access may require elevation
+
+The neighbor table and application-level collectors can still return results
+
+</details>
+
+[Read all platform notes](https://cyber0x3a.github.io/hostlens/platforms/)
+
+## Documentation
+
+| Start here | Developer material |
+| --- | --- |
+| [Installation](https://cyber0x3a.github.io/hostlens/installation/) | [Development setup](https://cyber0x3a.github.io/hostlens/development/setup/) |
+| [First scan](https://cyber0x3a.github.io/hostlens/first-scan/) | [Architecture](https://cyber0x3a.github.io/hostlens/development/architecture/) |
+| [Python API](https://cyber0x3a.github.io/hostlens/api/) | [Collectors and parsers](https://cyber0x3a.github.io/hostlens/development/collectors/) |
+| [Troubleshooting](https://cyber0x3a.github.io/hostlens/troubleshooting/) | [Testing](https://cyber0x3a.github.io/hostlens/development/testing/) |
+
+Full documentation lives at [cyber0x3a.github.io/hostlens](https://cyber0x3a.github.io/hostlens/)
 
 ## Development
 
 ```bash
+git clone https://github.com/Cyber0x3a/hostlens.git
+cd hostlens
+python -m venv .venv
+python -m pip install -e ".[dev,docs]"
+
 python -m ruff format --check .
 python -m ruff check .
 python -m pyright
 python -m pytest
 python -m build
+python -m mkdocs build --strict
 ```
 
-The normal unit test suite does not need a live network
+Normal unit tests do not use a live network
 
-Tests that use a real LAN should use the `network` marker
+Live network tests must use the `network` marker
 
-## Local benchmark
-
-The benchmark runs three fast scans and prints only aggregate timing and counts
-
-It never prints local IP addresses or MAC addresses
-
-```bash
-python benchmarks/local_scan.py
-```
-
-Fast scan performance depends on ARP access, the operating system neighbor table,
-DNS response time, interface size, and the number of visible devices
-
-## Publishing
-
-The GitHub Actions workflow lives at `.github/workflows/workflow.yml`
-
-Every push and pull request runs formatting, linting, typing, tests, and package
-builds
-
-Publishing uses PyPI trusted publishing when a version tag such as `v0.1.0` is pushed
-
-The PyPI project needs a trusted publisher for
-
-```text
-Owner       Cyber0x3a
-Repository  hostlens
-Workflow    workflow.yml
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) before changing protocol behavior or public models
 
 ## License
 
-[MIT](LICENSE)
+HostLens is available under the [MIT License](LICENSE)

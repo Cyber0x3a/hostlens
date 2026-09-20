@@ -1,0 +1,47 @@
+site_name: HostLens
+site_description: Python device discovery and identification for local networks
+site_url: https://cyber0x3a.github.io/hostlens/
+repo_url: https://github.com/Cyber0x3a/hostlens
+repo_name: Cyber0x3a/hostlens
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+
+nav:
+  - Home: index.md
+  - User guide:
+      - Installation: installation.md
+      - First scan: first-scan.md
+      - Scanning modes: scanning.md
+      - Device profiles: device-profiles.md
+      - Command line: cli.md
+      - Cloud enrichment: cloud.md
+      - Platform notes: platforms.md
+      - Troubleshooting: troubleshooting.md
+  - API reference: api.md
+  - Developer guide:
+      - Setup: development/setup.md
+      - Architecture: development/architecture.md
+      - Collectors and parsers: development/collectors.md
+      - Testing: development/testing.md
+      - Releasing: development/releasing.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+
+watch:
+  - src/hostlens
