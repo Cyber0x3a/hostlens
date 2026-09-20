@@ -1,3 +1,4 @@
+from rich.text import Text
 from typer.testing import CliRunner
 
 from hostlens.cli import app
@@ -13,7 +14,8 @@ def test_cli_help_lists_public_commands() -> None:
 
 
 def test_cli_rejects_conflicting_profiles() -> None:
-    result = CliRunner().invoke(app, ["scan", "--fast", "--deep"])
+    result = CliRunner().invoke(app, ["scan", "--fast", "--deep"], color=True)
 
     assert result.exit_code != 0
-    assert "either --fast or --deep" in result.output
+    output = Text.from_ansi(result.output).plain
+    assert "either --fast or --deep" in output
