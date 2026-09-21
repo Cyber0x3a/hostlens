@@ -28,14 +28,14 @@ _CONCURRENCY = {
 
 _COLLECTORS = {
     ScanMode.FAST: ("hostname", "oui"),
-    ScanMode.NORMAL: ("hostname", "oui", "mdns", "ssdp", "upnp"),
+    ScanMode.NORMAL: ("hostname", "oui", "mdns", "netbios", "llmnr", "upnp"),
     ScanMode.DEEP: (
         "hostname",
         "oui",
         "mdns",
-        "ssdp",
-        "upnp",
         "netbios",
+        "llmnr",
+        "upnp",
         "services",
     ),
     ScanMode.PASSIVE: ("oui",),

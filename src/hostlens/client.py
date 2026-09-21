@@ -10,11 +10,11 @@ from hostlens.cache import MemoryCache
 from hostlens.collectors import (
     Collector,
     HostnameCollector,
+    LlmnrCollector,
     MdnsCollector,
     NetbiosCollector,
     OuiCollector,
     ServiceCollector,
-    SsdpCollector,
     UpnpCollector,
     collect_evidence,
 )
@@ -51,7 +51,7 @@ def _built_in_collectors() -> tuple[Collector, ...]:
         HostnameCollector(),
         OuiCollector(),
         MdnsCollector(),
-        SsdpCollector(),
+        LlmnrCollector(),
         UpnpCollector(),
         NetbiosCollector(),
         ServiceCollector(),

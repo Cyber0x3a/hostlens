@@ -29,10 +29,10 @@ The name must match a collector name listed for at least one scan mode before th
 | --- | --- | --- |
 | `hostname` | `collectors/basic.py` | Reverse DNS lookup |
 | `oui` | `collectors/basic.py` | Local MAC manufacturer lookup |
-| `mdns` | `collectors/mdns.py` | Browse selected mDNS service types |
-| `ssdp` | `collectors/ssdp.py` | Send a unicast SSDP search to one target |
-| `upnp` | `collectors/upnp.py` | Find and fetch target-owned UPnP descriptions |
-| `netbios` | `collectors/netbios.py` | Query a NetBIOS name in deep mode |
+| `mdns` | `collectors/mdns.py` | Enumerate DNS-SD types once, resolve services, then try reverse mDNS |
+| `llmnr` | `collectors/local_names.py` | Ask for an IPv4 reverse name over LLMNR |
+| `upnp` | `collectors/upnp.py` | Run one multicast SSDP search and fetch target-owned UPnP descriptions |
+| `netbios` | `collectors/netbios.py` | Query the NetBIOS node-status name |
 | `services` | `collectors/services.py` | Connect to a short list of TCP ports in deep mode |
 
 ## Adding a collector
@@ -55,6 +55,10 @@ Return the hint as evidence and let fusion decide
 The shared runner wraps every collector in `asyncio.timeout`
 
 A collector should still pass the timeout to blocking calls, socket timeouts, and HTTP clients so its own resources stop promptly
+
+Multicast collectors share one short scan across target calls and cache that scan briefly
+
+Do not create a multicast browser or send a subnet-wide search once per target
 
 Use `asyncio.to_thread` for a blocking library call that has no asynchronous API
 

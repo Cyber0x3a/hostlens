@@ -17,6 +17,7 @@ def show_device(device: DeviceProfile) -> None:
         ("IP", device.ip),
         ("MAC", device.mac),
         ("Hostname", device.hostname),
+        ("Friendly name", device.friendly_name),
         ("Manufacturer", device.manufacturer),
         ("Type", device.device_type),
         ("Model", device.model),

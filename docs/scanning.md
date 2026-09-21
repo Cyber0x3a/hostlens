@@ -7,8 +7,8 @@ The definitions live in `src/hostlens/config.py`
 | Mode | Collectors | Default timeout | Concurrency cap |
 | --- | --- | ---: | ---: |
 | `fast` | reverse DNS and OUI | 0.8 seconds | 64 |
-| `normal` | fast collectors, mDNS, SSDP, and UPnP | 2.5 seconds | 48 |
-| `deep` | normal collectors, NetBIOS, and selected TCP services | 5 seconds | 24 |
+| `normal` | fast collectors, mDNS, DNS-SD, LLMNR, NetBIOS, SSDP, and UPnP | 2.5 seconds | 48 |
+| `deep` | normal collectors and selected TCP services | 5 seconds | 24 |
 | `passive` | OUI for hosts already in the neighbor table | 30 seconds | 16 |
 
 The constructor values are upper bounds
@@ -35,13 +35,17 @@ Normal mode is the default
 devices = await intel.scan_network()
 ```
 
-It adds local discovery protocols and applies the built-in fingerprint rules
+It adds the common local naming and discovery protocols and applies the built-in fingerprint rules
+
+mDNS, DNS-SD, and SSDP are scanned once for the network and their results are matched back to devices by address
+
+They are not restarted for every IP in the subnet
 
 If cloud enrichment is configured, normal mode can also query Fingerbank
 
 ## Deep
 
-Deep mode checks NetBIOS and these TCP ports
+Deep mode checks these TCP ports
 
 | Port | Label |
 | ---: | --- |

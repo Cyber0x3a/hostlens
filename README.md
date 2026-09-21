@@ -38,7 +38,7 @@ smart_tv
 0.94
 ```
 
-HostLens uses the local neighbor table, ARP, reverse DNS, OUI data, mDNS, SSDP, UPnP, NetBIOS, and a short list of useful TCP services
+HostLens uses the local neighbor table, ARP, reverse DNS, reverse mDNS, DNS-SD, LLMNR, NetBIOS, SSDP, UPnP, OUI data, and a short list of useful TCP services
 
 Unknown values stay `None`
 
@@ -99,8 +99,8 @@ intel = HostLens(interface="Wi-Fi")
 | Mode | Use it for | Collectors |
 | --- | --- | --- |
 | `fast` | Quick inventory | Neighbor table, ARP, reverse DNS, OUI |
-| `normal` | Everyday identification | Fast mode, mDNS, SSDP, UPnP, local rules |
-| `deep` | More evidence from one device or a small network | Normal mode, NetBIOS, selected TCP services |
+| `normal` | Everyday identification | Fast mode, mDNS, DNS-SD, LLMNR, NetBIOS, SSDP, UPnP, local rules |
+| `deep` | More evidence from one device or a small network | Normal mode and selected TCP services |
 | `passive` | Watching devices already known to the OS | Neighbor table and OUI without HostLens probes |
 
 Normal mode is the default

@@ -14,7 +14,7 @@ If active discovery returns no devices, try an elevated terminal once to separat
 
 Windows interface names such as `Wi-Fi` can be passed to `HostLens(interface=...)`
 
-NetBIOS checks in deep mode are useful mainly for Windows devices and older network appliances
+Normal and deep scans try LLMNR and NetBIOS for Windows devices and older network appliances
 
 ## Linux
 
@@ -49,6 +49,18 @@ A local firewall can block replies to UDP discovery or TCP service checks
 Wireless access points may isolate clients from each other
 
 In either case, HostLens can only report facts that reach the machine running the scan
+
+## Where names come from
+
+There is no universal request that makes every LAN device reveal its hostname
+
+HostLens tries conventional reverse DNS, reverse mDNS, DNS-SD advertisements, LLMNR, NetBIOS node status, and UPnP descriptions
+
+Phones and modern clients may publish none of them, especially while asleep or when Wi-Fi client isolation is enabled
+
+The DHCP server, router, Pi-hole, or network controller usually has the best name coverage because it saw the original lease request
+
+Reading that data requires access to that system and is outside an unauthenticated subnet scan
 
 ## Multiple adapters
 

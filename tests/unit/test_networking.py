@@ -1,7 +1,7 @@
 import pytest
 
 from hostlens.network.addressing import normalize_mac, validate_subnet
-from hostlens.network.discovery import parse_neighbor_table
+from hostlens.network.discovery import known_neighbors, parse_neighbor_table
 
 
 @pytest.mark.parametrize(
@@ -43,3 +43,22 @@ def test_large_subnet_is_rejected() -> None:
 def test_ipv6_active_scan_is_rejected() -> None:
     with pytest.raises(Exception, match="IPv4"):
         validate_subnet("2001:db8::/120")
+
+
+@pytest.mark.asyncio
+async def test_neighbor_discovery_ignores_broadcast_entries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = """
+    192.168.1.20 aa-bb-cc-dd-ee-ff dynamic
+    192.168.1.255 ff-ff-ff-ff-ff-ff static
+    """
+    monkeypatch.setattr("hostlens.network.discovery._read_neighbor_table", lambda: output)
+
+    targets = [target async for target in known_neighbors("192.168.1.0/24")]
+
+    assert [target.ip for target in targets] == ["192.168.1.20"]
+
+    single_target = [target async for target in known_neighbors("192.168.1.20/32")]
+
+    assert [target.ip for target in single_target] == ["192.168.1.20"]

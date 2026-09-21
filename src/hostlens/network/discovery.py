@@ -37,7 +37,15 @@ async def known_neighbors(subnet: str) -> AsyncIterator[Target]:
     network = ipaddress.ip_network(subnet, strict=False)
 
     for target in parse_neighbor_table(output):
-        if ipaddress.ip_address(target.ip) in network:
+        address = ipaddress.ip_address(target.ip)
+        if (
+            address in network
+            and not (
+                network.num_addresses > 2
+                and address in {network.network_address, network.broadcast_address}
+            )
+            and target.mac != "FF:FF:FF:FF:FF:FF"
+        ):
             yield target
 
 

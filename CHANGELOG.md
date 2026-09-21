@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 - 2026-09-21
+
+- Added reverse mDNS and LLMNR hostname lookups to normal scans
+- Added NetBIOS hostname lookup to normal scans and replaced fixed-offset parsing
+- Changed mDNS to enumerate advertised DNS-SD service types once per scan
+- Changed SSDP and UPnP to use one multicast discovery pass per scan
+- Added friendly name, model, and manufacturer evidence from mDNS service data
+- Added friendly names to CLI device output
+- Ignored network and broadcast addresses found in operating system neighbor tables
+
 ## 0.1.1 - 2026-09-20
 
 - Fixed positional subnet arguments for the `scan`, `discover`, and `watch` CLI commands

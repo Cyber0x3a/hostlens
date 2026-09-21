@@ -44,6 +44,10 @@ Try normal or deep mode, then inspect `device.evidence`
 
 Some devices do not publish names or discovery services and cannot be identified reliably from the LAN
 
+For the highest name coverage, use the DHCP lease data or API from the router, Pi-hole, or network controller
+
+Those systems receive hostnames during address assignment, while an ordinary LAN client does not have access to the full lease table
+
 ## A scan looks stale
 
 Host profiles are cached for five minutes on each `HostLens` instance
